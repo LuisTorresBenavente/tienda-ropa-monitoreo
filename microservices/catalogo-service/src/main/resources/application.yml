@@ -1,0 +1,25 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: catalogo-service
+
+# Delay artificial (para la casuística 2). Se controla con la variable de entorno CATALOGO_DELAY_MS
+catalogo:
+  delay-ms: ${CATALOGO_DELAY_MS:0}
+
+management:
+  endpoints:
+    web:
+      base-path: /            # así las rutas quedan en la raíz: /metrics
+      exposure:
+        include: prometheus   # solo exponemos el endpoint de Prometheus
+      path-mapping:
+        prometheus: metrics   # renombra /prometheus -> /metrics
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true   # necesario para calcular p95 en PromQL
+    tags:
+      application: catalogo-service
