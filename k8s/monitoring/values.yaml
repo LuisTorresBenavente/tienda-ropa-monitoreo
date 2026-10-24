@@ -1,0 +1,36 @@
+# Configuración propia de kube-prometheus-stack para el proyecto tienda-ropa
+
+grafana:
+  adminPassword: "TiendaRopa2026!"   # <- pon tu propia contraseña
+  service:
+    type: NodePort
+    nodePort: 30300
+
+prometheus:
+  service:
+    type: NodePort
+    nodePort: 30900
+  prometheusSpec:
+    # Buscar ServiceMonitors, PodMonitors y reglas en TODOS los namespaces,
+    # sin exigir el label "release" del chart
+    serviceMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelector: {}
+    serviceMonitorNamespaceSelector: {}
+    podMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelector: {}
+    podMonitorNamespaceSelector: {}
+    ruleSelectorNilUsesHelmValues: false
+    ruleSelector: {}
+    ruleNamespaceSelector: {}
+    retention: 2d
+    resources:
+      requests:
+        cpu: 200m
+        memory: 400Mi
+
+alertmanager:
+  alertmanagerSpec:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
