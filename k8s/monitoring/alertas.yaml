@@ -1,0 +1,57 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: tienda-ropa-alertas
+  namespace: tienda-ropa
+  labels:
+    app: tienda-ropa
+spec:
+  groups:
+    - name: tienda-ropa.disponibilidad
+      rules:
+        - alert: CatalogoServiceCaido
+          expr: up{job="catalogo-service", namespace="tienda-ropa"} == 0 or absent(up{job="catalogo-service", namespace="tienda-ropa"})
+          for: 30s
+          labels:
+            severity: critical
+          annotations:
+            summary: "catalogo-service está caído"
+            description: "El servicio de catálogo no responde. Sin él no se pueden validar productos ni reservar stock, así que compras no puede vender."
+
+        - alert: ComprasServiceCaido
+          expr: up{job="compras-service", namespace="tienda-ropa"} == 0 or absent(up{job="compras-service", namespace="tienda-ropa"})
+          for: 30s
+          labels:
+            severity: critical
+          annotations:
+            summary: "compras-service está caído"
+            description: "El servicio de compras no responde. Los clientes no pueden hacer pedidos."
+
+    - name: tienda-ropa.negocio
+      rules:
+        - alert: CatalogoLentoOConTimeouts
+          expr: increase(compras_catalogo_errores_total[1m]) > 2
+          for: 30s
+          labels:
+            severity: warning
+          annotations:
+            summary: "Compras está sufriendo timeouts contra catálogo"
+            description: "Más de 2 llamadas a catálogo fallaron en el último minuto. Se están perdiendo ventas por latencia o caída del catálogo."
+
+        - alert: StockTotalBajo
+          expr: catalogo_stock < 150
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: "El stock total del catálogo es bajo"
+            description: "Quedan menos de 150 unidades en total. Hay que reponer inventario antes de perder ventas."
+
+        - alert: PedidosRechazadosPorStock
+          expr: increase(catalogo_reservas_rechazadas_total[2m]) > 3
+          for: 30s
+          labels:
+            severity: warning
+          annotations:
+            summary: "Muchos pedidos rechazados por falta de stock"
+            description: "Más de 3 reservas rechazadas en 2 minutos. Los clientes quieren productos que no tenemos: ventas perdidas."
