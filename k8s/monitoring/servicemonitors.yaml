@@ -1,0 +1,37 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: catalogo-service
+  namespace: tienda-ropa
+  labels:
+    app: catalogo-service
+spec:
+  selector:
+    matchLabels:
+      app: catalogo-service
+  namespaceSelector:
+    matchNames:
+      - tienda-ropa
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: compras-service
+  namespace: tienda-ropa
+  labels:
+    app: compras-service
+spec:
+  selector:
+    matchLabels:
+      app: compras-service
+  namespaceSelector:
+    matchNames:
+      - tienda-ropa
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s
