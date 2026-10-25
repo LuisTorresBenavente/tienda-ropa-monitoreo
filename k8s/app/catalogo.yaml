@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: catalogo-service
+  namespace: tienda-ropa
+  labels:
+    app: catalogo-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: catalogo-service
+  template:
+    metadata:
+      labels:
+        app: catalogo-service
+    spec:
+      containers:
+        - name: catalogo-service
+          image: catalogo-service:1.0.0
+          imagePullPolicy: Never
+          ports:
+            - name: http
+              containerPort: 8081
+          env:
+            - name: CATALOGO_DELAY_MS
+              value: "0"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8081
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8081
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: catalogo-service
+  namespace: tienda-ropa
+  labels:
+    app: catalogo-service
+spec:
+  type: NodePort
+  selector:
+    app: catalogo-service
+  ports:
+    - name: http
+      port: 8081
+      targetPort: 8081
+      nodePort: 30081
